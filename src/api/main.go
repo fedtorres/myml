@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	port= ":8080"
+	port = ":8080"
 )
 
 var (
@@ -17,6 +17,7 @@ var (
 func main() {
 	router.GET("/ping", ping.Ping)
 	router.GET("/user/:userID", myml.GetUser)
+	router.GET("/user/:userID/myml", myml.GetMyML)
 
 	router.Run(port)
 }

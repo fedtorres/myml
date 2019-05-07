@@ -15,21 +15,21 @@ func (user *User) Get() *apierrors.ApiError {
 	response, err := http.Get(final)
 	if err != nil {
 		return &apierrors.ApiError{
-			Message: "userID is empty",
-			Status: http.StatusInternalServerError,
+			Message: "http.Get failed.",
+			Status:  http.StatusInternalServerError,
 		}
 	}
 	data, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return &apierrors.ApiError{
-			Message: "userID is empty",
-			Status: http.StatusInternalServerError,
+			Message: "ioutil.ReadAll failed",
+			Status:  http.StatusInternalServerError,
 		}
 	}
 	if err := json.Unmarshal([]byte(data), &user); err != nil {
 		return &apierrors.ApiError{
-			Message: "userID is empty",
-			Status: http.StatusInternalServerError,
+			Message: "json.Unmarshal failed",
+			Status:  http.StatusInternalServerError,
 		}
 	}
 	return nil

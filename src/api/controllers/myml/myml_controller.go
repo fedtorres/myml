@@ -18,7 +18,7 @@ func GetUser(c *gin.Context) {
 	if err != nil {
 		apiErr := &apierrors.ApiError{
 			Message: err.Error(),
-			Status: http.StatusBadRequest,
+			Status:  http.StatusBadRequest,
 		}
 		c.JSON(apiErr.Status, apiErr)
 		return
@@ -29,4 +29,23 @@ func GetUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, user)
+}
+
+func GetMyML(c *gin.Context) {
+	userID := c.Param(paramUserID)
+	id, err := strconv.ParseInt(userID, 10, 64)
+	if err != nil {
+		apiErr := &apierrors.ApiError{
+			Message: err.Error(),
+			Status:  http.StatusBadRequest,
+		}
+		c.JSON(apiErr.Status, apiErr)
+		return
+	}
+	myML, apiErr := myml.GetMyMLFromAPI(id)
+	if apiErr != nil {
+		c.JSON(apiErr.Status, apiErr)
+		return
+	}
+	c.JSON(http.StatusOK, myML)
 }
