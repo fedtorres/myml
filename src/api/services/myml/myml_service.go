@@ -54,7 +54,7 @@ func GetMyMLFromAPI(userID int64) (*myml.MyML, *apierrors.ApiError) {
 			myML.Categories = elem.Categories
 			continue
 		}
-		if &elem.Currency != nil {
+		if elem.Currency != nil {
 			myML.Currency = elem.Currency
 			continue
 		}
