@@ -1,7 +1,5 @@
 package myml
 
-import "github.com/mercadolibre/myml/src/api/utils/apierrors"
-
 type User struct {
 	ID               int    `json:"id"`
 	Nickname         string `json:"nickname"`
@@ -38,37 +36,4 @@ type User struct {
 	Status struct {
 		SiteStatus string `json:"site_status"`
 	} `json:"status"`
-}
-
-type Categories []struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type Country struct {
-	ID                 string      `json:"id"`
-	Name               string      `json:"name"`
-	Locale             string      `json:"locale"`
-	CurrencyID         string      `json:"currency_id"`
-	DecimalSeparator   string      `json:"decimal_separator"`
-	ThousandsSeparator string      `json:"thousands_separator"`
-	TimeZone           string      `json:"time_zone"`
-	GeoInformation     interface{} `json:"geo_information"`
-	States             []struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
-	} `json:"states"`
-}
-
-type Currency struct {
-	ID            string `json:"id"`
-	Description   string `json:"description"`
-	Symbol        string `json:"symbol"`
-	DecimalPlaces int    `json:"decimal_places"`
-}
-
-type MyML struct {
-	Categories *Categories         `json:"categories"`
-	Currency   *Currency           `json:"currency"`
-	Error      *apierrors.ApiError `json:"error"`
 }

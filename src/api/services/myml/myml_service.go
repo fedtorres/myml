@@ -59,7 +59,7 @@ func GetMyMLFromAPI(userID int64) (*myml.MyML, *apierrors.ApiError) {
 			continue
 		}
 		if elem.Error != nil {
-			return nil, &apierrors.ApiError{
+			return &myML, &apierrors.ApiError{
 				Message: "Couldn't get reply",
 				Status:  http.StatusInternalServerError,
 			}
@@ -88,7 +88,7 @@ func getCategories(countryID string, wg *sync.WaitGroup) *myml.MyML {
 			Categories: nil,
 			Currency:   nil,
 			Error: &apierrors.ApiError{
-				Message: "http.Get failed.",
+				Message: "ioutil.ReadAll failed.",
 				Status:  http.StatusInternalServerError,
 			},
 		}
@@ -99,7 +99,7 @@ func getCategories(countryID string, wg *sync.WaitGroup) *myml.MyML {
 			Categories: nil,
 			Currency:   nil,
 			Error: &apierrors.ApiError{
-				Message: "http.Get failed.",
+				Message: "json.Unmarshal failed.",
 				Status:  http.StatusInternalServerError,
 			},
 		}
@@ -130,7 +130,7 @@ func getCurrency(countryID string, wg *sync.WaitGroup) *myml.MyML {
 			Categories: nil,
 			Currency:   nil,
 			Error: &apierrors.ApiError{
-				Message: "http.Get failed.",
+				Message: "ioutil.ReadAll failed.",
 				Status:  http.StatusInternalServerError,
 			},
 		}
@@ -141,7 +141,7 @@ func getCurrency(countryID string, wg *sync.WaitGroup) *myml.MyML {
 			Categories: nil,
 			Currency:   nil,
 			Error: &apierrors.ApiError{
-				Message: "http.Get failed.",
+				Message: "json.Unmarshal failed.",
 				Status:  http.StatusInternalServerError,
 			},
 		}
@@ -164,7 +164,7 @@ func getCurrency(countryID string, wg *sync.WaitGroup) *myml.MyML {
 			Categories: nil,
 			Currency:   nil,
 			Error: &apierrors.ApiError{
-				Message: "http.Get failed.",
+				Message: "ioutil.ReadAll failed.",
 				Status:  http.StatusInternalServerError,
 			},
 		}
@@ -175,7 +175,7 @@ func getCurrency(countryID string, wg *sync.WaitGroup) *myml.MyML {
 			Categories: nil,
 			Currency:   nil,
 			Error: &apierrors.ApiError{
-				Message: "http.Get failed.",
+				Message: "json.Unmarshal failed.",
 				Status:  http.StatusInternalServerError,
 			},
 		}
