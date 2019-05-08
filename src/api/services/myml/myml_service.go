@@ -10,9 +10,10 @@ import (
 	"sync"
 )
 
-const urlCategories = "https://api.mercadolibre.com/sites/"
-const urlCountries = "https://api.mercadolibre.com/classified_locations/countries/"
-const urlCurrencies = "https://api.mercadolibre.com/currencies/"
+const mockUrl = "http://localhost:8081"
+const urlCategories = mockUrl + "/sites/"
+const urlCountries = mockUrl + "/classified_locations/countries/"
+const urlCurrencies = mockUrl + "/currencies/"
 
 func GetUserFromAPI(userID int64) (*myml.User, *apierrors.ApiError) {
 	if userID == 0 {

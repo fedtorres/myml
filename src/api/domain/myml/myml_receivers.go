@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-const urlUsers = "https://api.mercadolibre.com/users/"
+const urlUsers = "http://localhost:8081/users/"
 
 func (user *User) Get() *apierrors.ApiError {
 	final := fmt.Sprintf("%s%d", urlUsers, user.ID)
