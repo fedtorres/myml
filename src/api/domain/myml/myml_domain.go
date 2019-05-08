@@ -68,7 +68,7 @@ type Currency struct {
 }
 
 type MyML struct {
-	Categories Categories          `json:"categories"`
-	Currency   Currency            `json:"currency"`
+	Categories *Categories         `json:"categories"`
+	Currency   *Currency           `json:"currency"`
 	Error      *apierrors.ApiError `json:"error"`
 }

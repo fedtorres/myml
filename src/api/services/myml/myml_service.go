@@ -43,10 +43,11 @@ func GetMyMLFromAPI(userID int64) (*myml.MyML, *apierrors.ApiError) {
 	}
 	var wg sync.WaitGroup
 	wg.Add(2)
-	c := make(chan *myml.MyML)
+	c := make(chan *myml.MyML, 2)
 	go func() { c <- getCategories(user.SiteID, &wg) }()
 	go func() { c <- getCurrency(user.CountryID, &wg) }()
 	wg.Wait()
+	close(c)
 	var myML myml.MyML
 	for elem := range c {
 		if elem.Categories != nil {
@@ -55,6 +56,7 @@ func GetMyMLFromAPI(userID int64) (*myml.MyML, *apierrors.ApiError) {
 		}
 		if &elem.Currency != nil {
 			myML.Currency = elem.Currency
+			continue
 		}
 		if elem.Error != nil {
 			return nil, &apierrors.ApiError{
@@ -69,7 +71,6 @@ func GetMyMLFromAPI(userID int64) (*myml.MyML, *apierrors.ApiError) {
 func getCategories(countryID string, wg *sync.WaitGroup) *myml.MyML {
 	defer wg.Done()
 	final := fmt.Sprintf("%s%s/categories", urlCategories, countryID)
-	fmt.Println(final)
 	response, err := http.Get(final)
 	if err != nil {
 		return &myml.MyML{
@@ -104,16 +105,14 @@ func getCategories(countryID string, wg *sync.WaitGroup) *myml.MyML {
 		}
 	}
 	myML := myml.MyML{
-		Categories: categories,
+		Categories: &categories,
 	}
-	fmt.Println(myML)
 	return &myML
 }
 
 func getCurrency(countryID string, wg *sync.WaitGroup) *myml.MyML {
 	defer wg.Done()
 	final := fmt.Sprintf("%s%s", urlCountries, countryID)
-	fmt.Println(final)
 	response, err := http.Get(final)
 	if err != nil {
 		return &myml.MyML{
@@ -148,7 +147,6 @@ func getCurrency(countryID string, wg *sync.WaitGroup) *myml.MyML {
 		}
 	}
 	final = fmt.Sprintf("%s%s", urlCurrencies, country.CurrencyID)
-	fmt.Println(final)
 	response, err = http.Get(final)
 	if err != nil {
 		return &myml.MyML{
@@ -183,8 +181,7 @@ func getCurrency(countryID string, wg *sync.WaitGroup) *myml.MyML {
 		}
 	}
 	myML := myml.MyML{
-		Currency: currency,
+		Currency: &currency,
 	}
-	fmt.Println(myML.Currency)
 	return &myML
 }
