@@ -108,6 +108,7 @@ func getCategories(countryID string, wg *sync.WaitGroup) *myml.MyML {
 	myML := myml.MyML{
 		Categories: &categories,
 	}
+	fmt.Println(myML)
 	return &myML
 }
 
@@ -184,5 +185,6 @@ func getCurrency(countryID string, wg *sync.WaitGroup) *myml.MyML {
 	myML := myml.MyML{
 		Currency: &currency,
 	}
+	fmt.Println(myML)
 	return &myML
 }
