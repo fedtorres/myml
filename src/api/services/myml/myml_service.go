@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/mercadolibre/myml/src/api/domain/myml"
 	"github.com/mercadolibre/myml/src/api/utils/apierrors"
+	"github.com/sony/gobreaker"
 	"io/ioutil"
 	"net/http"
 	"sync"
@@ -14,6 +15,23 @@ const mockUrl = "http://localhost:8081"
 const urlCategories = mockUrl + "/sites/"
 const urlCountries = mockUrl + "/classified_locations/countries/"
 const urlCurrencies = mockUrl + "/currencies/"
+
+var cbCategories *gobreaker.CircuitBreaker
+var cbCurrency *gobreaker.CircuitBreaker
+var cbCountry *gobreaker.CircuitBreaker
+
+func init() {
+	var st gobreaker.Settings
+	st.Name = "HTTP GET"
+	st.ReadyToTrip = func(counts gobreaker.Counts) bool {
+		failureRatio := float64(counts.TotalFailures) / float64(counts.Requests)
+		return counts.Requests >= 3 && failureRatio >= 0.6
+	}
+
+	cbCategories = gobreaker.NewCircuitBreaker(st)
+	cbCurrency = gobreaker.NewCircuitBreaker(st)
+	cbCountry = gobreaker.NewCircuitBreaker(st)
+}
 
 func GetUserFromAPI(userID int64) (*myml.User, *apierrors.ApiError) {
 	if userID == 0 {
@@ -27,7 +45,7 @@ func GetUserFromAPI(userID int64) (*myml.User, *apierrors.ApiError) {
 	}
 	if err := user.Get(); err != nil {
 		return nil, &apierrors.ApiError{
-			Message: "user.Get failed",
+			Message: err.Message,
 			Status:  http.StatusInternalServerError,
 		}
 	}
@@ -38,7 +56,7 @@ func GetMyMLFromAPI(userID int64) (*myml.MyML, *apierrors.ApiError) {
 	user, err := GetUserFromAPI(userID)
 	if err != nil {
 		return nil, &apierrors.ApiError{
-			Message: "GetUserFromAPI failed",
+			Message: err.Message,
 			Status:  http.StatusInternalServerError,
 		}
 	}
@@ -72,30 +90,32 @@ func GetMyMLFromAPI(userID int64) (*myml.MyML, *apierrors.ApiError) {
 func getCategories(countryID string, wg *sync.WaitGroup) *myml.MyML {
 	defer wg.Done()
 	final := fmt.Sprintf("%s%s/categories", urlCategories, countryID)
-	response, err := http.Get(final)
-	if err != nil {
-		return &myml.MyML{
-			Categories: nil,
-			Currency:   nil,
-			Error: &apierrors.ApiError{
-				Message: "http.Get failed.",
-				Status:  http.StatusInternalServerError,
-			},
+	data, err := cbCategories.Execute(func() (interface{}, error) {
+		response, err := http.Get(final)
+		if err != nil {
+			return nil, err
 		}
-	}
-	data, err := ioutil.ReadAll(response.Body)
+
+		defer response.Body.Close()
+		data, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		return data, nil
+	})
 	if err != nil {
 		return &myml.MyML{
 			Categories: nil,
 			Currency:   nil,
 			Error: &apierrors.ApiError{
-				Message: "ioutil.ReadAll failed.",
+				Message: err.Error(),
 				Status:  http.StatusInternalServerError,
 			},
 		}
 	}
 	var categories myml.Categories
-	if err := json.Unmarshal([]byte(data), &categories); err != nil {
+	if err := json.Unmarshal([]byte(data.([]byte)), &categories); err != nil {
 		return &myml.MyML{
 			Categories: nil,
 			Currency:   nil,
@@ -115,30 +135,32 @@ func getCategories(countryID string, wg *sync.WaitGroup) *myml.MyML {
 func getCurrency(countryID string, wg *sync.WaitGroup) *myml.MyML {
 	defer wg.Done()
 	final := fmt.Sprintf("%s%s", urlCountries, countryID)
-	response, err := http.Get(final)
-	if err != nil {
-		return &myml.MyML{
-			Categories: nil,
-			Currency:   nil,
-			Error: &apierrors.ApiError{
-				Message: "http.Get failed.",
-				Status:  http.StatusInternalServerError,
-			},
+	data, err := cbCountry.Execute(func() (interface{}, error) {
+		response, err := http.Get(final)
+		if err != nil {
+			return nil, err
 		}
-	}
-	data, err := ioutil.ReadAll(response.Body)
+
+		defer response.Body.Close()
+		data, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		return data, nil
+	})
 	if err != nil {
 		return &myml.MyML{
 			Categories: nil,
 			Currency:   nil,
 			Error: &apierrors.ApiError{
-				Message: "ioutil.ReadAll failed.",
+				Message: err.Error(),
 				Status:  http.StatusInternalServerError,
 			},
 		}
 	}
 	country := myml.Country{}
-	if err := json.Unmarshal([]byte(data), &country); err != nil {
+	if err := json.Unmarshal([]byte(data.([]byte)), &country); err != nil {
 		return &myml.MyML{
 			Categories: nil,
 			Currency:   nil,
@@ -149,30 +171,32 @@ func getCurrency(countryID string, wg *sync.WaitGroup) *myml.MyML {
 		}
 	}
 	final = fmt.Sprintf("%s%s", urlCurrencies, country.CurrencyID)
-	response, err = http.Get(final)
-	if err != nil {
-		return &myml.MyML{
-			Categories: nil,
-			Currency:   nil,
-			Error: &apierrors.ApiError{
-				Message: "http.Get failed.",
-				Status:  http.StatusInternalServerError,
-			},
+	data, err = cbCurrency.Execute(func() (interface{}, error) {
+		response, err := http.Get(final)
+		if err != nil {
+			return nil, err
 		}
-	}
-	data, err = ioutil.ReadAll(response.Body)
+
+		defer response.Body.Close()
+		data, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		return data, nil
+	})
 	if err != nil {
 		return &myml.MyML{
 			Categories: nil,
 			Currency:   nil,
 			Error: &apierrors.ApiError{
-				Message: "ioutil.ReadAll failed.",
+				Message: err.Error(),
 				Status:  http.StatusInternalServerError,
 			},
 		}
 	}
 	var currency myml.Currency
-	if err := json.Unmarshal([]byte(data), &currency); err != nil {
+	if err := json.Unmarshal([]byte(data.([]byte)), &currency); err != nil {
 		return &myml.MyML{
 			Categories: nil,
 			Currency:   nil,
